@@ -3,7 +3,7 @@ resources:
     type: FileSpec
     configuration:
       sourceArtifactory: myArtifactory
-      aql: "{'repo' : 'docker-local'}"
+      aql: '{"items.find":{"name":{"$match":"s_foo"}}}'
 
 
 
