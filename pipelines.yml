@@ -1,1 +1,28 @@
+resources:
+  - name: GetFiles
+    type: FileSpec
+    configuration:
+      sourceArtifactory: myArtifactory
+      aql: |
+        items.find(
+          {
+            "$and": [
+              { "@vcs.revision": { "$eq":"0a327bd50793f6dfa1eafe37b21de06522d90a00" } },
+              { "name": { "$match": "0a327bd50793f6dfa1eafe37b21de06522d90a00-*" } }
+            ]
+          }
+        )
 
+
+pipelines:
+  - name: PropertyDemo
+    steps:
+      - name: ArtifactoryFiles
+        type: Bash
+        configuration:
+          inputResources:
+            - name: GetFiles
+        execution:
+          onExecute:
+            - cat $HOME/.jfrog/logs/jfrog-cli*
+            - ls
