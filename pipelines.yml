@@ -1,5 +1,5 @@
 resources:
-  - name: fileSpec_1
+  - name: GetFiles
     type: FileSpec
     configuration:
       sourceArtifactory: myArtifactory
