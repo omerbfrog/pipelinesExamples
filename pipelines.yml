@@ -3,8 +3,8 @@ resources:
     type: FileSpec
     configuration:
       sourceArtifactory: myArtifactory
-      aql: '{"items.find":{"name":{"s_foo"}}}'
-
+      aql: '{"items.find":{"repo":{"$match":"pypi-virtual"}}}'
+      
 pipelines:
   - name: PropertyDemo
     steps:
