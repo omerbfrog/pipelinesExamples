@@ -3,7 +3,7 @@ resources:
     type: FileSpec
     configuration:
       sourceArtifactory: myArtifactory
-      aql: '{items.find({"repo": "pypi-virtual"})'
+      aql: '{"items.find":({"repo": "pypi-virtual"})'
 
 
 pipelines:
