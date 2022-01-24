@@ -1,127 +1,18 @@
-#aql: '{"items.find({"$and": [{ "@vcs.revision": { "$eq":"0a327bd50793f6dfa1eafe37b21de06522d90a00" } }, { "name": { "$match": "0a327bd50793f6dfa1eafe37b21de06522d90a00-*" } }]})'
-template: true
-valuesFilePath: ./pipeline-values.yml
-
 resources:
-  - name: memberServiceRepo_1
-    type: GitRepo
-    configuration:
-      gitProvider: {{ .Values.memberServiceRepo_1.gitProvider }}
-      path: {{ .Values.memberServiceRepo_1.path }}
-      branches:
-        include: x-aaron-build-system-2
-
-  - name: memberServiceOutputImage_1
-    type: Image
-    configuration:
-      registry: artifactory_pipelineUser
-      imageName: mogo.jfrog.io/docker-nonprod/{{ .Values.memberServiceRepo_1.serviceName }}
-      imageTag: ${res_memberServiceRepo_1_commitSha}
-      sourceRepository: docker-nonprod
-
-  - name: uploadDependenciesBuildInfo_1
-    type: BuildInfo
-    configuration:
-      sourceArtifactory: artifactory_pipelineUser
-
-  - name: uploadSourcesBuildInfo_1
-    type: BuildInfo
-    configuration:
-      sourceArtifactory: artifactory_pipelineUser
-
-  - name: fileSpec_2
+  - name: GetFiles
     type: FileSpec
     configuration:
-      sourceArtifactory: artifactory_pipelineUser
-      aql: '{"items.find":{"$and":[{"@vcs.revision":{"$eq":"0a327bd50793f6dfa1eafe37b21de06522d90a00-*"}},{"name":{"$match":"0a327bd50793f6dfa1eafe37b21de06522d90a00-*"}}]}}'
-
+      sourceArtifactory: myArtifactory
+      aql: '{"items.find":{"$and":[{"@vcs.revision":{"$eq":"0a327bd50793f6dfa1eafe37b21de06522d90a00-*"}},{"name":{"$match":"0a327bd50793f6dfa1eafe37b21de06522d90a00-*"}}]}}'      
 pipelines:
-  - name: memberServicePipeline_1
+  - name: PropertyDemo
     steps:
-      - name: uploadDependencies_1
-        type: UploadArtifact
+      - name: ArtifactoryFiles
+        type: Bash
         configuration:
-          targetPath: mogogems/member_service/${res_memberServiceRepo_1_commitSha}-deps.tar.gz
-          sourcePath: ${res_memberServiceRepo_1_resourcePath}/.build/deps.tar.gz
-          forceXrayScan: true
-          failOnScan: true
-          autoPublishBuildInfo: true
-          integrations:
-            - name: artifactory_pipelineUser
-          outputResources:
-            - name: uploadDependenciesBuildInfo_1
-            - name: fileSpec_2
           inputResources:
-            - name: memberServiceRepo_1
-          runtime:
-            type: image
-            image:
-              custom:
-                name: mogo.jfrog.io/docker-nonprod/jfrog-builder
-                tag: testing
-                registry: artifactory_pipelineUser
-                sourceRepository: docker-nonprod
+            - name: GetFiles
         execution:
-          onStart:
-            - cd $res_memberServiceRepo_1_resourcePath
-            - .build/bundle-deps.sh
-
-      - name: uploadSources_1
-        type: UploadArtifact
-        configuration:
-          targetPath: mogogems/member_service/${res_memberServiceRepo_1_commitSha}-src.tar.gz
-          sourcePath: ${res_memberServiceRepo_1_resourcePath}/.build/src.tar.gz
-          forceXrayScan: true
-          failOnScan: true
-          autoPublishBuildInfo: true
-          integrations:
-            - name: artifactory_pipelineUser
-          outputResources:
-            - name: uploadSourcesBuildInfo_1
-            - name: fileSpec_2
-          inputResources:
-            - name: memberServiceRepo_1
-          runtime:
-            type: image
-            image:
-              custom:
-                name: mogo.jfrog.io/docker-nonprod/jfrog-builder
-                tag: testing
-                registry: artifactory_pipelineUser
-                sourceRepository: docker-nonprod
-        execution:
-          onStart:
-            - cd $res_memberServiceRepo_1_resourcePath
-            - .build/bundle-src.sh
-
-      - name: dockerBuild_1
-        type: DockerBuild
-        configuration:
-          affinityGroup: dockerGroup
-          dockerFileName: .build/Dockerfile
-          dockerImageName: mogo.jfrog.io/docker-nonprod/{{ .Values.memberServiceRepo_1.serviceName }}
-          dockerImageTag: ${res_memberServiceRepo_1_commitSha}
-          integrations:
-            - name: artifactory_pipelineUser
-          inputResources:
-            - name: memberServiceRepo_1
-            - name: fileSpec_2
-          inputSteps:
-            - name: uploadSources_1
-            - name: uploadDependencies_1
-        execution:
-          onStart:
-            - cd $res_memberServiceRepo_1_resourcePath
-            - echo "$(pwd)"
-            - ls -alh ${res_fileSpec_2_resourcePath}/member_service
-            - tar -xzvf ${res_fileSpec_2_resourcePath}/member_service/*.tar.gz
-
-      - name: dockerPush
-        type: DockerPush
-        configuration:
-          affinityGroup: dockerGroup
-          targetRepository: docker-nonprod
-          integrations:
-            - name: artifactory_pipelineUser
-          inputSteps:
-            - name: dockerBuild_1
+          onExecute:
+            - cat $HOME/.jfrog/logs/jfrog-cli*
+            - ls
