@@ -2,7 +2,7 @@ resources:
   - name: GetFiles
     type: FileSpec
     configuration:
-      sourceArtifactory: pipelineExample
+      sourceArtifactory: artifactory
       aql: '{"items.find":{"$and":[{"@vcs.revision":{"$eq":"0a327bd50793f6dfa1eafe37b21de06522d90a00-*"}},{"name":{"$match":"0a327bd50793f6dfa1eafe37b21de06522d90a00-*"}}]}}'      
 
 pipelines:
